@@ -29,16 +29,20 @@ defmodule Advent do
     end
   end
 
-  def first_frequency(list_of_ints), do: find_first(list_of_ints, [0])
+  def find_first(numbers) do
+    find_first(numbers, [0])
+  end
 
   def find_first(numbers, acc) do
     result =
       Enum.reduce_while(numbers, acc, fn number, acc ->
-        frequency = List.last(acc) + number
+        # # its better if we reverse the list for performance
+        # frequency = List.last(acc) + number
+        frequency = List.first(acc) + number
 
         if frequency in acc,
           do: {:halt, frequency},
-          else: {:cont, acc ++ [frequency]}
+          else: {:cont, [frequency | acc]}
       end)
 
     if is_integer(result), do: result, else: find_first(numbers, result)

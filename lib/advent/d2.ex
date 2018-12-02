@@ -3,14 +3,12 @@ defmodule Advent.D2 do
     string
     |> String.split("", trim: true)
     |> Enum.group_by(&String.first/1)
-    |> Enum.reduce({0, 0}, fn {_, occ}, acc ->
-      acc2 = elem(acc, 0)
-      acc3 = elem(acc, 1)
-
+    |> Enum.reduce_while({0, 0}, fn {_, occ}, {acc2, acc3} ->
       cond do
-        length(occ) == 2 -> {1, acc3}
-        length(occ) == 3 -> {acc2, 1}
-        true -> {acc2, acc3}
+        acc2 == 1 and acc3 == 1 -> {:halt, {1, 1}}
+        length(occ) == 2 -> {:cont, {1, acc3}}
+        length(occ) == 3 -> {:cont, {acc2, 1}}
+        true -> {:cont, {acc2, acc3}}
       end
     end)
   end
@@ -23,13 +21,7 @@ defmodule Advent.D2 do
           |> String.split("\n")
           |> Enum.reduce({0, 0}, fn checksum_line, {acc2, acc3} ->
             {occ2, occ3} = occurences(checksum_line)
-
-            cond do
-              occ2 > 0 and occ3 > 0 -> {acc2 + 1, acc3 + 1}
-              occ2 > 0 -> {acc2 + 1, acc3}
-              occ3 > 0 -> {acc2, acc3 + 1}
-              true -> {acc2, acc3}
-            end
+            {acc2 + occ2, acc3 + occ3}
           end)
 
         occ2 * occ3

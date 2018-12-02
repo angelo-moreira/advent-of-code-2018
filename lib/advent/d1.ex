@@ -1,17 +1,4 @@
-defmodule Advent do
-  @moduledoc """
-  Get a list of numbers and returns the result
-  """
-
-  @doc """
-  Counting.
-
-  ## Examples
-
-      iex> Advent.counting(["-5", "-2", "+1", "+14"])
-      8
-
-  """
+defmodule Advent.D1 do
   def counting(list_of_inst) do
     list_of_inst
     |> Enum.reduce(0, &(&1 + &2))

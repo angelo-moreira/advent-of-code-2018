@@ -23,8 +23,6 @@ defmodule Advent.D1 do
   def find_first(numbers, acc) do
     result =
       Enum.reduce_while(numbers, acc, fn number, acc ->
-        # # its better if we reverse the list for performance
-        # frequency = List.last(acc) + number
         frequency = List.first(acc) + number
 
         if frequency in acc,

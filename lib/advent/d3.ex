@@ -24,4 +24,37 @@ defmodule Advent.D3 do
         y <- (row + 1)..(row + height),
         do: {x, y}
   end
+
+  defp get_id([id | _]), do: id
+
+  # too late sorry for this mess :)
+  def part2(file) do
+    claims =
+      File.stream!(file)
+      |> Stream.map(fn line ->
+        line_values =
+          line
+          |> split_values()
+          |> Enum.map(&String.to_integer/1)
+
+        id = get_id(line_values)
+        tuple = coordinates_tuples(line_values)
+
+        {id, MapSet.new(tuple)}
+      end)
+      |> Enum.to_list()
+
+    {id, _} =
+      claims
+      |> Enum.find(fn {_id, claim_overlap} ->
+        claims
+        |> Enum.all?(fn {_, claim} ->
+          if MapSet.equal?(claim_overlap, claim),
+            do: true,
+            else: MapSet.disjoint?(claim_overlap, claim)
+        end)
+      end)
+
+    id
+  end
 end

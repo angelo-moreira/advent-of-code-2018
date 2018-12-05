@@ -26,12 +26,10 @@ defmodule Advent.D4 do
       |> Enum.map(&(String.splitter(&1, ["[", "] "], trim: true) |> Enum.to_list()))
       |> group_by_guard
       |> get_in([:guards])
-      |> Enum.map(fn {id, actions} -> %{id: id, intervals: guard_sleeping_time(actions)} end)
-      |> Enum.map(fn %{id: id, intervals: time_intervals} ->
+      |> Enum.map(fn {id, actions} ->
+        time_intervals = guard_sleeping_time(actions)
+
         intervals = for {from, to} <- time_intervals, do: from..to |> Enum.map(& &1)
-        %{id: id, intervals: intervals}
-      end)
-      |> Enum.map(fn %{id: id, intervals: intervals} ->
         %{id: id, intervals: intervals |> List.flatten()}
       end)
       |> Enum.map(fn %{id: id, intervals: intervals} ->

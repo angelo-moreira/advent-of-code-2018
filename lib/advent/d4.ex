@@ -13,7 +13,41 @@ defmodule Advent.D4 do
 
     most_likely_min_is_sleeping = likely_to_be_asleep(lazy_guard_action)
 
+    IO.inspect(lazy_guard_id)
     String.to_integer(lazy_guard_id) * most_likely_min_is_sleeping
+  end
+
+  def part2(file) do
+    %{id: id, minute: minute} =
+      file
+      |> File.read!()
+      |> String.split("\n")
+      |> Enum.sort()
+      |> Enum.map(&(String.splitter(&1, ["[", "] "], trim: true) |> Enum.to_list()))
+      |> group_by_guard
+      |> get_in([:guards])
+      |> Enum.map(fn {id, actions} -> %{id: id, intervals: guard_sleeping_time(actions)} end)
+      |> Enum.map(fn %{id: id, intervals: time_intervals} ->
+        intervals = for {from, to} <- time_intervals, do: from..to |> Enum.map(& &1)
+        %{id: id, intervals: intervals}
+      end)
+      |> Enum.map(fn %{id: id, intervals: intervals} ->
+        %{id: id, intervals: intervals |> List.flatten()}
+      end)
+      |> Enum.map(fn %{id: id, intervals: intervals} ->
+        intervals
+        |> Enum.group_by(& &1)
+        |> Enum.reduce(%{minute: 0, occ: 0}, fn {interval_minute, interval_occ},
+                                                %{minute: _, occ: occ} = acc ->
+          if length(interval_occ) > occ,
+            do: %{minute: interval_minute, occ: length(interval_occ)},
+            else: acc
+        end)
+        |> Map.put(:id, id)
+      end)
+      |> Enum.reduce(%{occ: 0}, fn guard, acc -> if guard.occ > acc.occ, do: guard, else: acc end)
+
+    String.to_integer(id) * minute
   end
 
   def group_by_guard(lines) do
@@ -105,17 +139,7 @@ defmodule Advent.D4 do
   end
 
   def likely_to_be_asleep(guard_actions) when is_list(guard_actions) do
-    down_started =
-      guard_actions
-      |> Enum.filter(&(&1.action == :down))
-      |> get_numbers_from_time
-
-    up_started =
-      guard_actions
-      |> Enum.filter(&(&1.action == :up))
-      |> get_numbers_from_time
-
-    time_intervals = Enum.zip(down_started, up_started)
+    time_intervals = guard_sleeping_time(guard_actions)
 
     occurences =
       for {from, to} <- time_intervals do
@@ -136,6 +160,20 @@ defmodule Advent.D4 do
       end)
 
     minute
+  end
+
+  def guard_sleeping_time(guard_actions) when is_list(guard_actions) do
+    down_started =
+      guard_actions
+      |> Enum.filter(&(&1.action == :down))
+      |> get_numbers_from_time
+
+    up_started =
+      guard_actions
+      |> Enum.filter(&(&1.action == :up))
+      |> get_numbers_from_time
+
+    Enum.zip(down_started, up_started)
   end
 
   def get_numbers_from_time(actions) do

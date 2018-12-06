@@ -1,38 +1,32 @@
 defmodule Advent.D5 do
   def part1() do
-    # file
-    # |> File.read!()
-    # |> String.split("", trim: true)
-
-    clean_list("dabAcCaCBAcCcaDA", "", false)
+    File.read!("inputs/d5.txt")
+    |> clean_list("")
+    |> String.length()
   end
 
-  def clean_list(string, acc, to_clean?) do
+  def clean_list(string, acc) do
     if string == "" do
-      {hd, tail} = get_head_and_tail(acc)
-      clean_list(tail, hd, to_clean?)
+      acc
     else
       {hd, tail} = get_head_and_tail(string)
-      is_capital? = hd =~ ~r/^\p{Lu}$/u
+      hd_capital? = hd =~ ~r/^\p{Lu}$/u
 
       {hd_acc, tail_acc} = get_head_and_tail(acc)
+      hd_acc_capital? = hd_acc =~ ~r/^\p{Lu}$/u
 
       cond do
         hd == "" ->
-          if to_clean? do
-            x = clean_list("", acc, to_clean?)
-            require IEx
-            IEx.pry()
-            x
-          else
-            acc
-          end
+          clean_list(tail, clean_list(tail, ""))
 
-        is_capital? and String.downcase(hd) == hd_acc ->
-          clean_list(tail, tail_acc, true)
+        hd_capital? and String.downcase(hd) == hd_acc ->
+          clean_list(tail, tail_acc)
+
+        hd_acc_capital? and String.downcase(hd_acc) == hd ->
+          clean_list(tail, tail_acc)
 
         true ->
-          clean_list(tail, hd <> acc, false)
+          clean_list(tail, hd <> acc)
       end
     end
   end

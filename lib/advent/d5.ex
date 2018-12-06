@@ -19,10 +19,8 @@ defmodule Advent.D5 do
         hd == "" ->
           clean_list(tail, clean_list(tail, ""))
 
-        hd_capital? and String.downcase(hd) == hd_acc ->
-          clean_list(tail, tail_acc)
-
-        hd_acc_capital? and String.downcase(hd_acc) == hd ->
+        (hd_capital? and String.downcase(hd) == hd_acc) or
+            (hd_acc_capital? and String.downcase(hd_acc) == hd) ->
           clean_list(tail, tail_acc)
 
         true ->

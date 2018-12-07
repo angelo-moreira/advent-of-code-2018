@@ -16,12 +16,9 @@ defmodule Advent.D5 do
       hd_acc_capital? = hd_acc =~ ~r/^\p{Lu}$/u
 
       cond do
-        hd == "" ->
-          clean_list(tail, clean_list(tail, ""))
-
         (hd_capital? and String.downcase(hd) == hd_acc) or
             (hd_acc_capital? and String.downcase(hd_acc) == hd) ->
-          clean_list(tail, tail_acc)
+          clean_list(tail, clean_list("", tail_acc))
 
         true ->
           clean_list(tail, hd <> acc)

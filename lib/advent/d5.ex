@@ -5,6 +5,22 @@ defmodule Advent.D5 do
     |> String.length()
   end
 
+  def part2() do
+    string = File.read!("inputs/d5.txt")
+
+    capital_letters =
+      string
+      |> String.split("", trim: true)
+      |> Enum.uniq()
+      |> Enum.filter(&(&1 =~ ~r/^\p{Lu}$/u))
+
+    capital_letters
+    |> Enum.map(&String.split(string, [&1, String.downcase(&1)]))
+    |> Enum.map(&Enum.join(&1))
+    |> Enum.map(&(clean_list(&1, "") |> String.length()))
+    |> Enum.min(& &1)
+  end
+
   def clean_list(string, acc) do
     if string == "" do
       acc

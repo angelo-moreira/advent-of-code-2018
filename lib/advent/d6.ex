@@ -1,20 +1,60 @@
 defmodule Advent.D6 do
   def part1() do
-    coordinates =
-      "inputs/d6_taj.txt"
-      |> File.read!()
-      |> String.split("\n")
-      |> Enum.map(&(String.split(&1, ", ", trim: true) |> List.to_tuple()))
-      |> Enum.map(fn {column, row} -> {String.to_integer(column), String.to_integer(row)} end)
-      |> Enum.with_index(1)
-
-    max_column = coordinates |> Enum.map(fn {{column, _}, _} -> column end) |> Enum.max()
-    max_row = coordinates |> Enum.map(fn {{_, row}, _} -> row end) |> Enum.max()
+    coordinates = get_coordinates()
+    {max_column, max_row} = tuple_max_column_and_row(coordinates)
 
     coordinates
-    |> new_board(max_column, max_row)
+    |> mark_new_board(max_column, max_row)
     |> remove_coordinates_from_the_edge(max_column, max_row)
     |> biggest_area()
+  end
+
+  def part2() do
+    coordinates = get_coordinates()
+    {max_column, max_row} = tuple_max_column_and_row(coordinates)
+
+    coordinates
+    |> new_board_with_distance(max_column, max_row)
+    |> Enum.filter(&(&1 < 10000))
+    |> length
+  end
+
+  def get_coordinates() do
+    "inputs/d6.txt"
+    |> File.read!()
+    |> String.split("\n")
+    |> Enum.map(&(String.split(&1, ", ", trim: true) |> List.to_tuple()))
+    |> Enum.map(fn {column, row} -> {String.to_integer(column), String.to_integer(row)} end)
+    |> Enum.with_index(1)
+  end
+
+  def tuple_max_column_and_row(coordinates) do
+    column = coordinates |> Enum.map(fn {{column, _}, _} -> column end) |> Enum.max()
+    row = coordinates |> Enum.map(fn {{_, row}, _} -> row end) |> Enum.max()
+    {column, row}
+  end
+
+  def new_board_with_distance(coordinates, max_column, max_row) do
+    for board_column <- 0..max_column,
+        board_row <- 0..max_row do
+      calculate_distance({board_column, board_row}, coordinates)
+    end
+  end
+
+  def calculate_distance({column, row}, coordinates) do
+    coordinates
+    |> Enum.map(&taxicab({column, row}, &1))
+    |> Enum.reduce(0, fn acc, distance -> distance + acc end)
+  end
+
+  def taxicab({first_column, first_row}, {{second_column, second_row}, _index}) do
+    abs(first_column - second_column) + abs(first_row - second_row)
+  end
+
+  def mark_new_board(coordinates, max_column, max_row) do
+    for board_column <- 0..max_column,
+        board_row <- 0..max_row,
+        do: taxicab_distance({board_column, board_row}, coordinates)
   end
 
   def biggest_area(board) do
@@ -23,12 +63,6 @@ defmodule Advent.D6 do
     |> Enum.map(fn {index, matches} -> {length(matches), index} end)
     |> Enum.max()
     |> elem(0)
-  end
-
-  def new_board(coordinates, max_column, max_row) do
-    for board_column <- 0..max_column,
-        board_row <- 0..max_row,
-        do: taxicab_distance({board_column, board_row}, coordinates)
   end
 
   def taxicab_distance({board_column, board_row} = _board_coordinate, coordinates) do

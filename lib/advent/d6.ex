@@ -1,7 +1,7 @@
 defmodule Advent.D6 do
   def part1() do
     coordinates =
-      "inputs/d6.txt"
+      "inputs/d6_taj.txt"
       |> File.read!()
       |> String.split("\n")
       |> Enum.map(&(String.split(&1, ", ", trim: true) |> List.to_tuple()))
@@ -31,6 +31,29 @@ defmodule Advent.D6 do
         do: taxicab_distance({board_column, board_row}, coordinates)
   end
 
+  def taxicab_distance({board_column, board_row} = _board_coordinate, coordinates) do
+    distances =
+      coordinates
+      |> Enum.map(fn {{column, row}, index} ->
+        {abs(column - board_column) + abs(row - board_row), index}
+      end)
+
+    {shortest_distance, index} =
+      distances
+      |> Enum.min_by(fn {distance, _index} -> distance end)
+
+    if more_than_one_short_distance?(distances, shortest_distance) do
+      {board_column, board_row, "."}
+    else
+      {board_column, board_row, index}
+    end
+  end
+
+  def more_than_one_short_distance?(distances, shortest) do
+    how_many = Enum.filter(distances, fn {distance, _index} -> distance == shortest end)
+    length(how_many) > 1
+  end
+
   def remove_coordinates_from_the_edge(board, max_column, max_row) do
     infinite_points =
       board
@@ -41,27 +64,5 @@ defmodule Advent.D6 do
       |> Enum.uniq()
 
     board |> Enum.filter(fn {_, _, index} -> not (index in infinite_points) end)
-  end
-
-  def taxicab_distance({board_column, board_row} = _board_coordinate, coordinates) do
-    closest_to =
-      coordinates
-      |> Enum.map(fn {{column, row}, index} ->
-        {abs(column - board_column) + abs(row - board_row), index}
-      end)
-      |> closest()
-
-    {board_column, board_row, closest_to}
-  end
-
-  def closest(distances) do
-    {_distance, how_many} = distances |> Enum.group_by(&elem(&1, 0)) |> Enum.at(0)
-
-    if length(how_many) == 1 do
-      [{_distance, index}] = how_many
-      index
-    else
-      "."
-    end
   end
 end
